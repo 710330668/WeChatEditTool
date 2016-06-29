@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">WeChatEditTool</string>
+    <string name="main_warning">长按粘贴公众号文章链接在此处...请勿编辑/转发谣言、暴力、色情、辱骂等违规内容</string>
+    <string name="main_btn_open">打开</string>
+    <string name="main_btn_reset">清空</string>
+    <string name="edit_tv_back">返回</string>
+    <string name="edit_tv_title">文章编辑</string>
+    <string name="edit_tv_save">保存</string>
+</resources>
