@@ -12,6 +12,7 @@
     tools:context="wechatedittool.com.wechatedittool.MainActivity">
 
     <EditText
+        android:id="@+id/main_tv_link"
         android:layout_width="match_parent"
         android:layout_height="250dp"
         android:hint="@string/main_warning"/>
@@ -37,5 +38,11 @@
             android:layout_weight="1"
             android:text="@string/main_btn_open"/>
     </LinearLayout>
+
+    <WebView
+        android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        ></WebView>
 
 </LinearLayout>
