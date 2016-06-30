@@ -22,6 +22,7 @@ public class EditActivity extends Activity {
     private RichEditor mEditor;
 //789
 //1234567
+//5687
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
