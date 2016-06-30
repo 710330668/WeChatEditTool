@@ -20,7 +20,6 @@ public class EditActivity extends Activity {
     TextView editTvSave;
     String mContentString = "";
     private RichEditor mEditor;
-//456
 //789
     @Override
     protected void onCreate(Bundle savedInstanceState) {
