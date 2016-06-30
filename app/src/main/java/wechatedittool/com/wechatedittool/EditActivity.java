@@ -18,7 +18,6 @@ public class EditActivity extends Activity {
     TextView editTvTitle;
     @Bind(R.id.edit_tv_save)
     TextView editTvSave;
-//123
     String mContentString = "";
     private RichEditor mEditor;
 
