@@ -54,8 +54,9 @@ public class EditActivity extends Activity {
         public void handleMessage(Message msg) {
             if (msg.what == 1 && msg.obj != null) {
                 // 显示图片
-                mIvImage.setImageBitmap((Bitmap) msg.obj);
+//                mIvImage.setImageBitmap((Bitmap) msg.obj);
 //                Bitmap bitmap = (Bitmap) msg.obj;
+                mEditor.insertImage(String.valueOf(msg.obj), "");
             }
         }
     };
@@ -482,7 +483,7 @@ public class EditActivity extends Activity {
 
                     Message msg = new Message();
                     msg.what = 1;
-                    msg.obj = bitmap;
+                    msg.obj = theThumbnail;
                     handler.sendMessage(msg);
                 }
             }
