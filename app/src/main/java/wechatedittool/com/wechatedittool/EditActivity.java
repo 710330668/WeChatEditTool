@@ -52,6 +52,7 @@ public class EditActivity extends Activity {
     @Bind(R.id.edit_tv_save)
     TextView editTvSave;
     String mContentString = "";
+    String mContentAddress = "";
     private RichEditor mEditor;
     private String appID;
     private String appSecret;
@@ -83,6 +84,7 @@ public class EditActivity extends Activity {
         ButterKnife.bind(this);
 
         mContentString = getIntent().getStringExtra("content");
+        mContentAddress =getIntent().getStringExtra("address");
         initShare();
 
         mEditor = (RichEditor) findViewById(R.id.editor);
@@ -298,21 +300,21 @@ public class EditActivity extends Activity {
     private void initShare() {
         mController = UMServiceFactory.getUMSocialService("com.umeng.share");
         // 设置分享内容
-        mController.setShareContent("123");
-        // 设置分享图片, 参数2为图片的url地址
-//        mController.setShareMedia(new UMImage(this,
-//                "http://www.umeng.com/images/pic/banner_module_social.png"));
+        mController.setShareContent("文章分享");
+//         设置分享图片, 参数2为图片的url地址
+        mController.setShareMedia(new UMImage(this,
+                "http://img3.duitang.com/uploads/item/201507/08/20150708041219_AdYcW.jpeg"));
         mController.getConfig().removePlatform(SHARE_MEDIA.RENREN,
                 SHARE_MEDIA.DOUBAN, SHARE_MEDIA.TENCENT);
-        appID = "wxa2f3a65f29746a18";
-        appSecret = "d4624c36b6795d1d99dcf0547af5443d";
+        appID = "wx41527d40e5c8f348";
+        appSecret = "e41452c6316100f1a7b991b23f6af5ff";
         wxCircleHandler = new UMWXHandler(EditActivity.this,
                 appID, appSecret);
         wxCircleHandler.setToCircle(true);
-
-        wxCircleHandler.addToSocialSDK();
         //链接
-        wxCircleHandler.setTargetUrl("");
+        wxCircleHandler.setTargetUrl(mContentAddress);
+        wxCircleHandler.addToSocialSDK();
+
     }
 
     private void showShareDialog() {
@@ -328,7 +330,7 @@ public class EditActivity extends Activity {
                             public void onClick(
                                     DialogInterface dialoginterface,
                                     int i) {
-                             //分享到微信圈
+                                //分享到微信圈
                                 mController.postShare(EditActivity.this, SHARE_MEDIA.WEIXIN_CIRCLE,
                                         mShareListener);
                             }

@@ -42,7 +42,7 @@ public class MainActivity extends Activity {
             super.handleMessage(msg);
             if (msg.getData() != null && msg.getData().getString("MSG") != null && isGo) {
                 mProgressDialog.dismiss();
-                startActivity(new Intent(MainActivity.this, EditActivity.class).putExtra("content", msg.getData().getString("MSG")));
+                startActivity(new Intent(MainActivity.this, EditActivity.class).putExtra("content", msg.getData().getString("MSG")).putExtra("address",mainTvLink.getText().toString()));
                 isGo = false;
                 Log.e("************", msg.getData().getString("MSG"));
             }
