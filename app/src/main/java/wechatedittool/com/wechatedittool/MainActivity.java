@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -15,6 +16,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -80,8 +82,14 @@ public class MainActivity extends Activity {
     }
 
     private void openLink() {
-        mProgressDialog.show();
-        mWebView.loadUrl(URL1);
+
+        if(TextUtils.isEmpty(mainTvLink.getText().toString())){
+            Toast.makeText(MainActivity.this,"链接不能为空",Toast.LENGTH_LONG).show();
+        }else{
+            mProgressDialog.show();
+            mWebView.loadUrl(mainTvLink.getText().toString());
+        }
+
     }
 
     final class InJavaScriptLocalObj {
