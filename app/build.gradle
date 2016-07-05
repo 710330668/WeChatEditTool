@@ -1,8 +1,8 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion '24.0.0'
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
 
     defaultConfig {
         applicationId "wechatedittool.com.wechatedittool"
@@ -17,11 +17,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'com.jakewharton:butterknife:7.0.1'
     compile 'jp.wasabeef:richeditor-android:1.2.0'
+    compile files('libs/SocialSDK_WeiXin_1.jar')
+    compile files('libs/umeng_social_sdk.jar')
+    compile files('libs/SocialSDK_WeiXin_2.jar')
 }

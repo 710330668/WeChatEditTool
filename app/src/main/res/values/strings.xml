@@ -5,7 +5,7 @@
     <string name="main_btn_reset">清空</string>
     <string name="edit_tv_back">返回</string>
     <string name="edit_tv_title">文章编辑</string>
-    <string name="edit_tv_save">保存</string>
+    <string name="edit_tv_save">分享</string>
     <string name="main_title">微信文章编辑器</string>
     <string name="main_pre">预览</string>
 </resources>

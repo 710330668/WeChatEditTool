@@ -20,10 +20,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.umeng.socialize.bean.SHARE_MEDIA;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import com.umeng.socialize.bean.SocializeEntity;
+import com.umeng.socialize.controller.UMServiceFactory;
+import com.umeng.socialize.controller.UMSocialService;
+import com.umeng.socialize.controller.listener.SocializeListeners.SnsPostListener;
+import com.umeng.socialize.media.UMImage;
+import com.umeng.socialize.sso.UMSsoHandler;
+import com.umeng.socialize.weixin.controller.UMWXHandler;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -43,12 +53,15 @@ public class EditActivity extends Activity {
     TextView editTvSave;
     String mContentString = "";
     private RichEditor mEditor;
-
+    private String appID;
+    private String appSecret;
+    private UMWXHandler wxCircleHandler;
     public static final int ACTION_TYPE_ALBUM = 0;
     public static final int ACTION_TYPE_PHOTO = 1;
     private String theLarge, theThumbnail;
     private File imgFile;
     private ImageView mIvImage;
+    private UMSocialService mController;
     private final Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -70,7 +83,7 @@ public class EditActivity extends Activity {
         ButterKnife.bind(this);
 
         mContentString = getIntent().getStringExtra("content");
-
+        initShare();
 
         mEditor = (RichEditor) findViewById(R.id.editor);
         mEditor.setHtml(mContentString);
@@ -282,6 +295,26 @@ public class EditActivity extends Activity {
         });
     }
 
+    private void initShare() {
+        mController = UMServiceFactory.getUMSocialService("com.umeng.share");
+        // 设置分享内容
+        mController.setShareContent("123");
+        // 设置分享图片, 参数2为图片的url地址
+//        mController.setShareMedia(new UMImage(this,
+//                "http://www.umeng.com/images/pic/banner_module_social.png"));
+        mController.getConfig().removePlatform(SHARE_MEDIA.RENREN,
+                SHARE_MEDIA.DOUBAN, SHARE_MEDIA.TENCENT);
+        appID = "wxa2f3a65f29746a18";
+        appSecret = "d4624c36b6795d1d99dcf0547af5443d";
+        wxCircleHandler = new UMWXHandler(EditActivity.this,
+                appID, appSecret);
+        wxCircleHandler.setToCircle(true);
+
+        wxCircleHandler.addToSocialSDK();
+        //链接
+        wxCircleHandler.setTargetUrl("");
+    }
+
     private void showShareDialog() {
         new AlertDialog.Builder(EditActivity.this)
         /* 弹出窗口的最上头文字 */
@@ -295,7 +328,9 @@ public class EditActivity extends Activity {
                             public void onClick(
                                     DialogInterface dialoginterface,
                                     int i) {
-
+                             //分享到微信圈
+                                mController.postShare(EditActivity.this, SHARE_MEDIA.WEIXIN_CIRCLE,
+                                        mShareListener);
                             }
                         })
         /* 设置弹出窗口的返回事件 */
@@ -399,95 +434,130 @@ public class EditActivity extends Activity {
         }
     }
 
+    SnsPostListener mShareListener = new SnsPostListener() {
+
+        @Override
+        public void onStart() {
+
+        }
+
+        @Override
+        public void onComplete(SHARE_MEDIA platform, int stCode,
+                               SocializeEntity entity) {
+            if (stCode == 200) {
+//        Toast.makeText(InvitationPriceActivity.this, "分享成功", Toast.LENGTH_SHORT)
+//            .show();
+            } else {
+//        Toast.makeText(InvitationPriceActivity.this,
+//            "分享失败 : error code : " + stCode, Toast.LENGTH_SHORT)
+//            .show();
+            }
+        }
+    };
+
+
 
     @Override
     public void onActivityResult(final int requestCode, final int resultCode,
                                  final Intent imageReturnIntent) {
         if (resultCode != Activity.RESULT_OK)
             return;
-        new Thread() {
-            private String selectedImagePath;
+        if(requestCode == ImageUtils.REQUEST_CODE_GETIMAGE_BYSDCARD||requestCode == ImageUtils.REQUEST_CODE_GETIMAGE_BYCAMERA) {
 
-            @Override
-            public void run() {
-                Bitmap bitmap = null;
-                if (requestCode == ImageUtils.REQUEST_CODE_GETIMAGE_BYSDCARD) {
-                    if (imageReturnIntent == null)
-                        return;
-                    Uri selectedImageUri = imageReturnIntent.getData();
-                    if (selectedImageUri != null) {
-                        selectedImagePath = ImageUtils.getImagePath(
-                                selectedImageUri, EditActivity.this);
-                    }
+            new Thread() {
+                private String selectedImagePath;
 
-                    if (selectedImagePath != null) {
-                        theLarge = selectedImagePath;
-                    } else {
-                        bitmap = ImageUtils.loadPicasaImageFromGalley(
-                                selectedImageUri, EditActivity.this);
-                    }
+                @Override
+                public void run() {
+                    Bitmap bitmap = null;
+                    if (requestCode == ImageUtils.REQUEST_CODE_GETIMAGE_BYSDCARD) {
+                        if (imageReturnIntent == null)
+                            return;
+                        Uri selectedImageUri = imageReturnIntent.getData();
+                        if (selectedImageUri != null) {
+                            selectedImagePath = ImageUtils.getImagePath(
+                                    selectedImageUri, EditActivity.this);
+                        }
 
-                    if (isMethodsCompat(android.os.Build.VERSION_CODES.ECLAIR_MR1)) {
-                        String imaName = FileUtil.getFileName(theLarge);
-                        if (imaName != null)
-                            bitmap = ImageUtils.loadImgThumbnail(EditActivity.this,
-                                    imaName,
-                                    MediaStore.Images.Thumbnails.MICRO_KIND);
-                    }
-                    if (bitmap == null && !StringUtils.isEmpty(theLarge))
-                        bitmap = ImageUtils
-                                .loadImgThumbnail(theLarge, 100, 100);
-                } else if (requestCode == ImageUtils.REQUEST_CODE_GETIMAGE_BYCAMERA) {
-                    // 拍摄图片
-                    if (bitmap == null && !StringUtils.isEmpty(theLarge)) {
-                        bitmap = ImageUtils
-                                .loadImgThumbnail(theLarge, 100, 100);
-                    }
-                }
-
-                if (bitmap != null) {// 存放照片的文件夹
-                    String savePath = Environment.getExternalStorageDirectory()
-                            .getAbsolutePath() + "/OSChina/Camera/";
-                    File savedir = new File(savePath);
-                    if (!savedir.exists()) {
-                        savedir.mkdirs();
-                    }
-
-                    String largeFileName = FileUtil.getFileName(theLarge);
-                    String largeFilePath = savePath + largeFileName;
-                    // 判断是否已存在缩略图
-                    if (largeFileName.startsWith("thumb_")
-                            && new File(largeFilePath).exists()) {
-                        theThumbnail = largeFilePath;
-                        imgFile = new File(theThumbnail);
-                    } else {
-                        // 生成上传的800宽度图片
-                        String thumbFileName = "thumb_" + largeFileName;
-                        theThumbnail = savePath + thumbFileName;
-                        if (new File(theThumbnail).exists()) {
-                            imgFile = new File(theThumbnail);
+                        if (selectedImagePath != null) {
+                            theLarge = selectedImagePath;
                         } else {
-                            try {
-                                // 压缩上传的图片
-                                ImageUtils.createImageThumbnail(EditActivity.this,
-                                        theLarge, theThumbnail, 800, 80);
-                                imgFile = new File(theThumbnail);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                            bitmap = ImageUtils.loadPicasaImageFromGalley(
+                                    selectedImageUri, EditActivity.this);
+                        }
+
+                        if (isMethodsCompat(android.os.Build.VERSION_CODES.ECLAIR_MR1)) {
+                            String imaName = FileUtil.getFileName(theLarge);
+                            if (imaName != null)
+                                bitmap = ImageUtils.loadImgThumbnail(EditActivity.this,
+                                        imaName,
+                                        MediaStore.Images.Thumbnails.MICRO_KIND);
+                        }
+                        if (bitmap == null && !StringUtils.isEmpty(theLarge))
+                            bitmap = ImageUtils
+                                    .loadImgThumbnail(theLarge, 100, 100);
+                    } else if (requestCode == ImageUtils.REQUEST_CODE_GETIMAGE_BYCAMERA) {
+                        // 拍摄图片
+                        if (bitmap == null && !StringUtils.isEmpty(theLarge)) {
+                            bitmap = ImageUtils
+                                    .loadImgThumbnail(theLarge, 100, 100);
                         }
                     }
-                    // 保存动弹临时图片
-                    // ((AppContext) getApplication()).setProperty(
-                    // tempTweetImageKey, theThumbnail);
 
-                    Message msg = new Message();
-                    msg.what = 1;
-                    msg.obj = theThumbnail;
-                    handler.sendMessage(msg);
+                    if (bitmap != null) {// 存放照片的文件夹
+                        String savePath = Environment.getExternalStorageDirectory()
+                                .getAbsolutePath() + "/OSChina/Camera/";
+                        File savedir = new File(savePath);
+                        if (!savedir.exists()) {
+                            savedir.mkdirs();
+                        }
+
+                        String largeFileName = FileUtil.getFileName(theLarge);
+                        String largeFilePath = savePath + largeFileName;
+                        // 判断是否已存在缩略图
+                        if (largeFileName.startsWith("thumb_")
+                                && new File(largeFilePath).exists()) {
+                            theThumbnail = largeFilePath;
+                            imgFile = new File(theThumbnail);
+                        } else {
+                            // 生成上传的800宽度图片
+                            String thumbFileName = "thumb_" + largeFileName;
+                            theThumbnail = savePath + thumbFileName;
+                            if (new File(theThumbnail).exists()) {
+                                imgFile = new File(theThumbnail);
+                            } else {
+                                try {
+                                    // 压缩上传的图片
+                                    ImageUtils.createImageThumbnail(EditActivity.this,
+                                            theLarge, theThumbnail, 800, 80);
+                                    imgFile = new File(theThumbnail);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                        // 保存动弹临时图片
+                        // ((AppContext) getApplication()).setProperty(
+                        // tempTweetImageKey, theThumbnail);
+
+                        Message msg = new Message();
+                        msg.what = 1;
+                        msg.obj = theThumbnail;
+                        handler.sendMessage(msg);
+                    }
                 }
+            }.start();
+        }
+        else{
+
+            UMSsoHandler ssoHandler = mController.getConfig().getSsoHandler(
+                    resultCode);
+            if (ssoHandler != null) {
+                ssoHandler.authorizeCallBack(requestCode, resultCode, imageReturnIntent);
             }
-        }.start();
+
+            super.onActivityResult(requestCode, resultCode, imageReturnIntent);
+        }
     }
 
     /**
